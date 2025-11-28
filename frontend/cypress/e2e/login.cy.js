@@ -1,48 +1,109 @@
-describe('Chức năng Đăng Nhập', () => {
+describe('Chức năng Đăng Nhập (Chế độ Demo)', () => {
   
+  const VIEW_TIME = 200; 
+  const TYPING_SPEED = 100;
+
   beforeEach(() => {
-    // 1. Giả lập API Login (Mock API)
-    // Khi app gọi POST tới /api/login, Cypress sẽ chặn lại và trả về thành công ngay lập tức
-   // SAI (quá cứng nhắc, lệch 1 chữ là lỗi)
-// cy.intercept('POST', 'http://localhost:8080/api/login', ...)
+    cy.intercept('POST', '**/api/login', {
+      statusCode: 200,
+      body: { token: 'token-vip-123', user: { name: 'Quang' } }
+    }).as('loginSuccess');
 
-// ĐÚNG (Dùng wildcard **, bắt tất cả domain/port miễn là đuôi khớp)
-cy.intercept('POST', '**/api/login', {
-  statusCode: 200,
-  body: {
-    token: 'fake-token-123',
-    user: { name: 'Quang' }
-  }
-}).as('loginApi');
-
-    // 2. Truy cập vào trang web thật
-    cy.visit('http://localhost:5173/login'); 
-    // (Lưu ý: Bạn phải cấu hình Router để đường dẫn /login hiển thị component Login)
+    cy.visit('http://localhost:5173/login'); // Nhớ check lại port (3000 hoặc 5173)
   });
 
-  it('Đăng nhập thành công', () => {
-    // Tìm input username qua data-testid và gõ chữ
-    cy.get('[data-testid="username-input"]').type('quang');
-    
-    // Tìm input password và gõ chữ
-    cy.get('[data-testid="password-input"]').type('123456');
-    
-    // Click nút đăng nhập
+  // --- CASE 1: THÀNH CÔNG ---
+  it('1. Đăng nhập thành công (User đúng, Pass đúng)', () => {
+    cy.get('[data-testid="username-input"]').type('quang', { delay: TYPING_SPEED });
+    cy.get('[data-testid="password-input"]').type('123456', { delay: TYPING_SPEED });
     cy.get('[data-testid="login-button"]').click();
 
-    // Chờ API được gọi
-    cy.wait('@loginApi');
-
-    // Kiểm tra kết quả (Ví dụ: thông báo thành công hiện ra)
+    cy.wait('@loginSuccess');
+    
+    // SỬA: Bỏ kiểm tra màu chính xác (rgb vs oklch), chỉ kiểm tra nội dung
     cy.get('[data-testid="login-message"]')
       .should('be.visible')
       .and('contain', 'Đăng nhập thành công');
+
+    cy.wait(VIEW_TIME);
   });
 
-  it('Báo lỗi khi để trống', () => {
+  // --- CASE 2: USERNAME SAI ---
+  it('2. Tên đăng nhập SAI, Mật khẩu ĐÚNG', () => {
+    cy.intercept('POST', '**/api/login', {
+      statusCode: 404, 
+      body: { message: 'Tài khoản không tồn tại' }
+    }).as('loginFailUser');
+
+    cy.get('[data-testid="username-input"]').type('user_bi_sai', { delay: TYPING_SPEED });
+    cy.get('[data-testid="password-input"]').type('123456', { delay: TYPING_SPEED });
     cy.get('[data-testid="login-button"]').click();
-    
+
+    cy.wait('@loginFailUser');
+
+    // Nhờ bước 1 đã sửa Login.jsx nên giờ nó sẽ hiện đúng message này
+    cy.get('[data-testid="login-message"]')
+      .should('contain', 'Tài khoản không tồn tại');
+
+    cy.wait(VIEW_TIME);
+  });
+
+  // --- CASE 3: PASSWORD SAI ---
+  it('3. Tên đăng nhập ĐÚNG, Mật khẩu SAI', () => {
+    cy.intercept('POST', '**/api/login', {
+      statusCode: 401, 
+      body: { message: 'Sai mật khẩu' }
+    }).as('loginFailPass');
+
+    cy.get('[data-testid="username-input"]').type('quang', { delay: TYPING_SPEED });
+    cy.get('[data-testid="password-input"]').type('mat_khau_bay_ba', { delay: TYPING_SPEED });
+    cy.get('[data-testid="login-button"]').click();
+
+    cy.wait('@loginFailPass');
+
+    cy.get('[data-testid="login-message"]')
+      .should('contain', 'Sai mật khẩu');
+
+    cy.wait(VIEW_TIME);
+  });
+
+  // --- CASE 4: USERNAME RỖNG ---
+  it('4. Tên đăng nhập RỖNG, Mật khẩu ĐÚNG', () => {
+    cy.get('[data-testid="password-input"]').type('123456', { delay: TYPING_SPEED });
+    cy.get('[data-testid="login-button"]').click();
+
+    cy.get('[data-testid="username-error"]')
+      .should('be.visible')
+      .and('contain', 'Vui lòng nhập tên đăng nhập');
+
+    cy.wait(VIEW_TIME);
+  });
+
+  // --- CASE 5: PASSWORD RỖNG ---
+  it('5. Tên đăng nhập ĐÚNG, Mật khẩu RỖNG', () => {
+    cy.intercept('POST', '**/api/login', {
+      statusCode: 400, 
+      body: { message: 'Vui lòng nhập mật khẩu' }
+    }).as('loginFailEmptyPass');
+
+    cy.get('[data-testid="username-input"]').type('quang', { delay: TYPING_SPEED });
+    cy.get('[data-testid="login-button"]').click();
+
+    cy.wait('@loginFailEmptyPass');
+
+    cy.get('[data-testid="login-message"]')
+      .should('contain', 'Vui lòng nhập mật khẩu');
+
+    cy.wait(VIEW_TIME);
+  });
+
+  // --- CASE 6: CẢ 2 CÙNG RỖNG ---
+  it('6. Cả Tên đăng nhập và Mật khẩu đều RỖNG', () => {
+    cy.get('[data-testid="login-button"]').click();
+
     cy.get('[data-testid="username-error"]')
       .should('contain', 'Vui lòng nhập tên đăng nhập');
+
+    cy.wait(VIEW_TIME);
   });
 });
