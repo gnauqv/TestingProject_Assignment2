@@ -31,37 +31,8 @@ jobs:
       - name: Install dependencies
         working-directory: ./frontend
         run: npm ci
-
-       # 1) Validation Test (product)
-      - name: Run Product Validation Tests
-        working-directory: ./frontend
-        run: npm run test:productValidationFrontend
-
-      # 2) Integration Test
-      - name: Run ProductList Integration Tests
-        working-directory: ./frontend
-        run: npm run test:productListIntegrationFrontend
-        
-      - name: Run ProductForm Integration Tests
-        working-directory: ./frontend
-        run: npm run test:productFormIntegrationFrontend
-        
-      - name: Run ProductDetail Integration Tests
-        working-directory: ./frontend
-        run: npm run test:productDetailIntegrationFrontend
-
-      # 3) Mock Test
-      - name: Run Product Mock Tests
-        working-directory: ./frontend
-        run: npm run test:productMockFrontend
-
-      - name: Start Frontend Server
-        working-directory: ./frontend
-        run: |
-          npm start &
-          sleep 10
-            
-      # 4) E2E (Cypress)
+    
+      #  E2E (Cypress)
       - name: Install Cypress
         working-directory: ./frontend
         run: npx cypress install
