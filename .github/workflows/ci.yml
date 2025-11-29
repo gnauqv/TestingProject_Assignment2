@@ -31,6 +31,13 @@ jobs:
       - name: Install dependencies
         working-directory: ./frontend
         run: npm ci
+
+      - name: Start Frontend Server
+        working-directory: ./frontend
+        run: |
+          npm start &
+          npx wait-on http://localhost:5173
+
     
       #  E2E (Cypress)
       - name: Install Cypress
