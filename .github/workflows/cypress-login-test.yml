@@ -1,4 +1,4 @@
-name: Complete CI/CD Pipeline
+name: Frontend Login Tests CI
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  run-product-test:
+  test-frontend:
     runs-on: ubuntu-latest
 
     steps:
@@ -32,28 +32,20 @@ jobs:
         working-directory: ./frontend
         run: npm ci
 
-       # 1) Validation Test (product)
-      - name: Run Product Validation Tests
+       # 1) Validation Test (frontend)
+      - name: Run Login Validation Tests
         working-directory: ./frontend
-        run: npm run test:productValidationFrontend
+        run: npm run test:validationFrontend
 
       # 2) Integration Test
-      - name: Run ProductList Integration Tests
+      - name: Run Login Integration Tests
         working-directory: ./frontend
-        run: npm run test:productListIntegrationFrontend
-        
-      - name: Run ProductForm Integration Tests
-        working-directory: ./frontend
-        run: npm run test:productFormIntegrationFrontend
-        
-      - name: Run ProductDetail Integration Tests
-        working-directory: ./frontend
-        run: npm run test:productDetailIntegrationFrontend
+        run: npm run test:loginIntegrationFrontend
 
       # 3) Mock Test
-      - name: Run Product Mock Tests
+      - name: Run Login Mock Tests
         working-directory: ./frontend
-        run: npm run test:productMockFrontend
+        run: npm run test:loginMockFrontend
 
       - name: Start Frontend Server
         working-directory: ./frontend
@@ -66,17 +58,17 @@ jobs:
         working-directory: ./frontend
         run: npx cypress install
 
-      - name: Run Product E2E Tests
+      - name: Run Login E2E Tests
         working-directory: ./frontend
-        run: npm run test:e2eFrontendProduct
+        run: npm run test:e2eFrontend
 
       # Upload ALL coverage results
       - name: Generate coverage report
         working-directory: ./frontend
         run: npm run test:coverage
         
-      - name: Upload Product Coverage Artifact
+      - name: Upload Login Coverage Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: product-coverage
+          name: login-coverage
           path: frontend/coverage
