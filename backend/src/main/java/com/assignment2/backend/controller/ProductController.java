@@ -16,29 +16,35 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
+    // 1. Create
     @PostMapping
     public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto) {
-        return new ResponseEntity<>(productService.createProduct(productDto), HttpStatus.CREATED);
+        ProductDto createdProduct = productService.createProduct(productDto);
+        return new ResponseEntity<>(createdProduct, HttpStatus.CREATED); // Trả về 201 Created
     }
 
+    // 2. Get All
     @GetMapping
     public ResponseEntity<List<ProductDto>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
+        return ResponseEntity.ok(productService.getAllProducts()); // Trả về 200 OK
     }
 
+    // 3. Get One
     @GetMapping("/{id}")
     public ResponseEntity<ProductDto> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
+    // 4. Update
     @PutMapping("/{id}")
     public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id, @RequestBody ProductDto productDto) {
         return ResponseEntity.ok(productService.updateProduct(id, productDto));
     }
 
+    // 5. Delete
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent().build(); // Trả về 204 No Content
     }
 }
