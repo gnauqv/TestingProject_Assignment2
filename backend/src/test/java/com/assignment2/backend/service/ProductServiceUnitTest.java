@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class ProductServiceUnitTest {
 
-    @Mock(lenient = true)
+    @Mock
     private ProductRepository productRepository;
 
     @InjectMocks
@@ -82,9 +82,9 @@ public class ProductServiceUnitTest {
         Pageable pageable = PageRequest.of(0, 2);
         Page<Product> page = new PageImpl<>(list.subList(0, 2), pageable, list.size());
 
-        when(productRepository.findAll(pageable)).thenReturn(page);
+        when(productRepository.findAll(any(Pageable.class))).thenReturn(page);
 
-        Page<ProductDto> result = (Page)productService.getAllProducts();
+        Page<ProductDto> result = productService.getAllProducts(pageable);
 
         assertNotNull(result);
         assertEquals(2, result.getContent().size());
@@ -92,7 +92,7 @@ public class ProductServiceUnitTest {
         assertEquals(2, result.getSize());
         assertEquals(0, result.getNumber());
         assertEquals("A", result.getContent().get(0).getName());
-        verify(productRepository, times(1)).findAll(pageable);
+        verify(productRepository, times(1)).findAll(any(Pageable.class));
     }
 
     @Test

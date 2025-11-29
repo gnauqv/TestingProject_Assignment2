@@ -62,13 +62,14 @@ class ProductControllerIntegrationTest {
                 new ProductDto(2L, "Product B", 200.0)
         );
 
-        when(productService.getAllProducts()).thenReturn(products);
+        when(productService.getAllProducts(any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(products));
 
         mockMvc.perform(get("/api/products"))
                 .andExpect(status().isOk()) // Mong đợi 200
-                .andExpect(jsonPath("$.size()").value(2))
-                .andExpect(jsonPath("$[0].name").value("Product A"))
-                .andExpect(jsonPath("$[1].name").value("Product B"));
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[0].name").value("Product A"))
+                .andExpect(jsonPath("$.content[1].name").value("Product B"));
     }
 
     // --- Yêu cầu (c): Test GET /api/products/{id} (Read one) ---
