@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-// Đảm bảo đường dẫn import service đúng
+import { useParams, useNavigate } from 'react-router-dom';
 import { getProductById } from '../services/productService';
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  
-  // 1. Thêm state để lưu lỗi
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -16,10 +14,8 @@ const ProductDetail = () => {
       try {
         const res = await getProductById(id);
         setProduct(res.data || res);
-      } catch (err) {
-        console.error(err);
-        // 2. Cập nhật state lỗi khi gọi API thất bại
-        setError('Product not found'); 
+      } catch {
+        setError('Không tìm thấy sản phẩm'); // không dùng biến err nên ESLint OK
       } finally {
         setLoading(false);
       }
@@ -27,21 +23,25 @@ const ProductDetail = () => {
     fetchDetail();
   }, [id]);
 
-  if (loading) return <div>Loading...</div>;
-
-  // 3. Render thông báo lỗi nếu có state error (để pass test)
-  if (error) {
-    return <div data-testid="error-message">{error}</div>;
-  }
-
-  if (!product) return <div>Không tìm thấy sản phẩm</div>;
+  if (loading) return <div className="text-center py-10">Loading...</div>;
+  if (error) return <div className="text-center text-red-500 py-10">{error}</div>;
+  if (!product) return <div className="text-center py-10">Không tìm thấy sản phẩm</div>;
 
   return (
-    <div>
-      <h1>Chi tiết sản phẩm</h1>
-      <h2 data-testid="product-name">{product.name}</h2>
-      <p data-testid="product-price">{product.price}</p>
-      <p data-testid="product-desc">{product.description || 'Không có mô tả'}</p>
+    <div className="container mx-auto p-4 max-w-md">
+      <div className="border rounded-lg shadow p-6 bg-white">
+        <h1 className="text-2xl font-bold mb-4">{product.name}</h1>
+        <p className="text-gray-700 mb-2">
+          Giá: <span className="font-semibold">{product.price.toLocaleString()} VNĐ</span>
+        </p>
+        <p className="text-gray-600 mb-4">{product.description || 'Không có mô tả'}</p>
+        <button
+          onClick={() => navigate('/products')}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Quay lại
+        </button>
+      </div>
     </div>
   );
 };
