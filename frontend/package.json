@@ -4,12 +4,18 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "test": "jest"
-  },
+  "dev": "vite",
+  "start": "vite",
+  "build": "vite build",
+  "lint": "eslint .",
+  "preview": "vite preview",
+
+  "test": "jest",
+  "test:coverage": "jest --coverage",
+
+  "test:e2eFrontend": "cypress run"
+},
+
   "dependencies": {
     "@tailwindcss/vite": "^4.1.17",
     "axios": "^1.13.2",
