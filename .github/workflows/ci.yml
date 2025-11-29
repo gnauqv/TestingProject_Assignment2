@@ -1,100 +1,76 @@
-name: Full Project CI Pipeline
 
-on:
+name: 6.2.3 Complete CI/CD Pipeline
+
+# Kích hoạt khi Push (cho CD) và Pull Request (cho CI)
+on: 
   push:
-    branches: [ main ] 
+    branches: [ main]
   pull_request:
-    branches: [ main ]
+    branches: [ main]
 
 jobs:
-  full-ci: 
+  # Job 1: BUILD & TEST (CI)
+  build-test:
+    name: Build & Run All Tests
     runs-on: ubuntu-latest
     
-    # 1. CẤU HÌNH DATABASE SERVICE
-    services:
-      postgres:
-        image: postgres:14
-        env:
-          POSTGRES_DB: testdb
-          POSTGRES_PASSWORD: password
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    # 2. BỔ SUNG: BIẾN MÔI TRƯỜNG CHO KẾT NỐI DB VÀ API
-    # Các biến này sẽ được truyền vào Spring Boot khi chạy tests và khi chạy server.
-    env:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testdb
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: password
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      # 3. SETUP MÔI TRƯỜNG
-      - name: ⚙️ Setup Java 17 for Backend
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: ⚙️ Setup Node.js 18 for Frontend
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: 20
 
-      # 4. CHẠY TẤT CẢ BACKEND TESTS (UNIT & INTEGRATION)
-      # Tests sẽ sử dụng biến môi trường DB đã khai báo ở trên.
-      - name: 🧪 Run Backend Tests (All)
-        run: |
-          cd backend
-          ./mvnw -B clean test 
+      - name: Install dependencies
+        uses: cypress-io/github-action/install-dependencies@v3
+        with:
+          npm-install-command: 'npm install'
 
-      # 5. KHỞI ĐỘNG BACKEND SERVER THẬT (Bắt buộc cho E2E)
-      # Server cũng sẽ sử dụng biến môi trường DB để khởi động thành công.
-      - name: 🏃 Run Backend Server (Port 8080)
-        run: |
-          cd backend
-          mvn clean install -DskipTests 
-          mvn spring-boot:run & 
-          echo "Waiting 15 seconds for Backend (8080) to start..."
-          sleep 15
-        shell: bash
+      # BƯỚC 1: BUILD Ứng dụng (npm run build)
+      - name: Build Application for Production (Vite)
+        run: npm run build 
         
-      # 6. CÀI ĐẶT FRONTEND
-      - name: 📦 Install Frontend dependencies
-        run: |
-          cd frontend
-          npm install
-
-      # 7. CHẠY TẤT CẢ FRONTEND TESTS (UNIT/COMPONENT)
-      - name: 🧪 Run Frontend Tests (All)
-        run: |
-          cd frontend
-          npm test -- --coverage --watchAll=false 
-
-      # 8. CHẠY TẤT CẢ E2E TESTS
-      - name: 🌐 Run Cypress E2E Tests (All Features)
+      # BƯỚC 2: CHẠY KIỂM THỬ (Chạy TẤT CẢ Tests)
+      - name: Start App and Run Cypress All Tests
         uses: cypress-io/github-action@v6
         with:
-          working-directory: frontend
-          start: npm run dev 
-          wait-on: 'http://localhost:5173' 
-          spec: cypress/e2e/*.spec.js 
-          browser: chrome
-        env:
-          REACT_APP_API_BASE_URL: http://localhost:8080 
+          spec: cypress/e2e/**/*.cy.js 
+          start: npm run dev & 
+          wait-on: 'http://localhost:5173'
+          install: false
           
-      # 9. UPLOAD REPORTS
-      - name: ⬆️ Upload Test Reports & Coverage
+      # BƯỚC 3: UPLOAD ARTIFACT (Lưu trữ file Build cho Deploy)
+      - name: Upload Build Artifact for Deployment
         uses: actions/upload-artifact@v4
+        # Chỉ upload khi không phải PR
+        if: success() && github.event_name != 'pull_request' 
         with:
-          name: full-test-reports
-          path: |
-            frontend/cypress/reports
-            frontend/coverage
-          retention-days: 7
+          name: production-build
+          path: dist # <-- Xác nhận output build của Vite là 'dist'
+
+  # 
+  # Job 2: TRIỂN KHAI (CD)
+  #
+  deploy:
+    name: Deploy to Hosting Service (CD)
+    runs-on: ubuntu-latest
+    needs: build-test 
+    # CHỈ CHẠY khi push lên nhánh chính VÀ build-test thành công
+    if: success() && github.ref == 'refs/heads/main' 
+    
+    steps:
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: production-build
+          path: . 
+
+      - name: Deploy to Netlify (Example)
+        uses: netlify/actions/cli@v3
+        with:
+          args: deploy --dir=./dist --prod
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
