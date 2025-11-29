@@ -61,18 +61,12 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-<<<<<<< HEAD
-        <!-- Add Spring Security test helpers for MockMvc csrf(), etc. -->
-=======
 
->>>>>>> 387ab9d5c9d378c6edce98cff17ed2955a8eb4f5
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
-<<<<<<< HEAD
-=======
 
         <!-- Dependency để chạy db ảo -->
         <dependency>
@@ -93,7 +87,6 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
->>>>>>> 387ab9d5c9d378c6edce98cff17ed2955a8eb4f5
     </dependencies>
 
     <build>

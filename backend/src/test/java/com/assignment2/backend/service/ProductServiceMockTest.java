@@ -46,6 +46,15 @@ public class ProductServiceMockTest {
         }
     }
 
+    // Minimal ProductService interface used by ProductServiceImpl
+    interface ProductService {
+        ProductDto createProduct(ProductDto productDto);
+        List<ProductDto> getAllProducts();
+        ProductDto getProductById(Long id);
+        ProductDto updateProduct(Long id, ProductDto productDto);
+        void deleteProduct(Long id);
+    }
+
     // Minimal ProductServiceImpl used for testing; converts between DTO and Entity
     static class ProductServiceImpl implements ProductService {
         private final ProductRepository repository;
