@@ -4,6 +4,7 @@ import com.assignment2.backend.dto.ProductDto;
 import com.assignment2.backend.entity.Product;
 import com.assignment2.backend.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

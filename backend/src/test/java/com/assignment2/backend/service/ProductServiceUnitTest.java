@@ -83,7 +83,7 @@ public class ProductServiceUnitTest {
 
         when(productRepository.findAll(pageable)).thenReturn(page);
 
-        Page<ProductDto> result = productService.getAllProducts(pageable);
+        Page<ProductDto> result = (Page)productService.getAllProducts();
 
         assertNotNull(result);
         assertEquals(2, result.getContent().size());
