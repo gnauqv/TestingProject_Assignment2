@@ -59,7 +59,7 @@ describe('validateProduct', () => {
     const longDesc = { name: 'P', price: 1, quantity: 1, category: 'Other', description: 'a'.repeat(501) };
     expect(validateProduct(longDesc).description).toBe('Mô tả không được vượt quá 500 ký tự');
 
-    const ok = { name: 'P', price: 1, quantity: 1, category: 'Other', description: 'short' };
+    const ok = { name: 'Poon', price: 1, quantity: 1, category: 'Other', description: 'short' };
     expect(validateProduct(ok)).toBeNull();
   });
 

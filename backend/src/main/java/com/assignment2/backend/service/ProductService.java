@@ -28,6 +28,7 @@ public class ProductService {
         return productRepository.findAll().stream()
                 .map(p -> new ProductDto(p.getId(), p.getName(), p.getPrice()))
                 .collect(Collectors.toList());
+        // return productRepository.findAll(pageable);
     }
 
     // 3. Read One
