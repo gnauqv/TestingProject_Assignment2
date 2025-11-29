@@ -34,8 +34,12 @@
             ProductControllerIntegrationTest.java
 
     - Run Test:
-        + B1: cd frontend/
-        + B2: npm test
+        + Frontend:
+            B1: cd frontend/
+            B2: npm test
+        + Backend:
+            B1: cd backend/
+            B2: mvn test (hoặc mvn clean test)
 
         
 4. Mock Testing
