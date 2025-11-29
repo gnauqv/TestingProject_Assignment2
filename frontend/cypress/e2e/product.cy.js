@@ -16,6 +16,9 @@ describe('Chức năng Quản lý Sản phẩm (Chế độ Demo)', () => {
             body: mockProducts
         }).as('getProducts');
     });
+    
+    cy.contains('Danh sách sản phẩm').should('be.visible');
+    // cy.contains(newProduct.name).should('be.visible');
 
     // --- CASE 1: Hiển thị danh sách ---
     it('1. Hiển thị danh sách sản phẩm thành công', () => {
