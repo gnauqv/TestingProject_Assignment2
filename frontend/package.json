@@ -13,7 +13,8 @@
   "test": "jest",
   "test:coverage": "jest --coverage",
 
-  "test:e2eFrontend": "cypress run --spec 'cypress/e2e/login.cy.js'"
+  "test:e2eFrontend": "cypress run --spec 'cypress/e2e/login.cy.js'",
+  "test:e2eFrontendProduct": "cypress run --spec 'cypress/e2e/product.cy.js'"
 
 },
 
