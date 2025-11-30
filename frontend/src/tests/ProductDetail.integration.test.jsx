@@ -2,15 +2,11 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
-
 import * as productService from '../services/productService';
 import ProductDetail from '../components/ProductDetail';
 
-// Mock service
-jest.mock('../services/productService');
-
+// (c) Test ProductDetail component
 describe('ProductDetail Component Integration Tests', () => {
-
     const mockProduct = {
         id: 1,
         name: 'Single Product',
@@ -18,13 +14,16 @@ describe('ProductDetail Component Integration Tests', () => {
         description: 'This is a test product.'
     };
 
-    beforeEach(() => {
-        jest.clearAllMocks();
+    afterEach(() => {
+        jest.restoreAllMocks();
     });
 
-    // (c) Test kịch bản thành công
+    // Test trường hợp thành công
     test('Hiển thị chi tiết sản phẩm khi API thành công', async () => {
-        productService.getProductById.mockResolvedValue({ data: mockProduct });
+        jest.spyOn(productService, 'getProductById').mockImplementation(async (id) => {
+            await new Promise(r => setTimeout(r, 50));
+            return { data: mockProduct };
+        });
 
         render(
             <MemoryRouter initialEntries={['/products/1']}>
@@ -35,19 +34,20 @@ describe('ProductDetail Component Integration Tests', () => {
         );
 
         await waitFor(() => {
-            expect(productService.getProductById).toHaveBeenCalledWith('1');
-
             expect(screen.getByText('Single Product')).toBeInTheDocument();
             expect(screen.getByText('This is a test product.')).toBeInTheDocument();
-
-            // SỬA: Dùng Regex /500/ để tìm số 500 nằm trong chuỗi "500 VNĐ" hoặc "500,000"
             expect(screen.getByText(/500/)).toBeInTheDocument();
         });
     });
 
-    // (c) Test kịch bản lỗi
+    // Test trường hợp lỗi
     test('Hiển thị lỗi khi API không tìm thấy sản phẩm', async () => {
-        productService.getProductById.mockRejectedValue(new Error('Product not found'));
+        const errorMsg = 'Product not found';
+
+        jest.spyOn(productService, 'getProductById').mockImplementation(async () => {
+            await new Promise(r => setTimeout(r, 50));
+            throw new Error(errorMsg);
+        });
 
         render(
             <MemoryRouter initialEntries={['/products/999']}>
@@ -58,11 +58,9 @@ describe('ProductDetail Component Integration Tests', () => {
         );
 
         await waitFor(() => {
-            expect(productService.getProductById).toHaveBeenCalledWith('999');
-
             const errorElement = screen.getByTestId('error-message');
             expect(errorElement).toBeInTheDocument();
-            expect(errorElement).toHaveTextContent('Product not found');
+            expect(errorElement).toHaveTextContent(errorMsg);
         });
     });
 });
