@@ -2,12 +2,12 @@ package com.assignment2.backend.controller;
 
 import com.assignment2.backend.dto.ProductDto;
 import com.assignment2.backend.service.ProductService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
@@ -23,10 +23,10 @@ public class ProductController {
         return new ResponseEntity<>(createdProduct, HttpStatus.CREATED); // Trả về 201 Created
     }
 
-    // 2. Get All
+    // 2. Get All (paginated)
     @GetMapping
-    public ResponseEntity<List<ProductDto>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts()); // Trả về 200 OK
+    public ResponseEntity<Page<ProductDto>> getAllProducts(Pageable pageable) {
+        return ResponseEntity.ok(productService.getAllProducts(pageable)); // Trả về 200 OK
     }
 
     // 3. Get One

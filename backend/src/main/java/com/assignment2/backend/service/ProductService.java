@@ -4,6 +4,9 @@ import com.assignment2.backend.dto.ProductDto;
 import com.assignment2.backend.entity.Product;
 import com.assignment2.backend.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,6 +30,16 @@ public class ProductService {
         return productRepository.findAll().stream()
                 .map(p -> new ProductDto(p.getId(), p.getName(), p.getPrice()))
                 .collect(Collectors.toList());
+        // return productRepository.findAll(pageable);
+    }
+
+    // Overload: Read all with pagination
+    public Page<ProductDto> getAllProducts(Pageable pageable) {
+        Page<Product> page = productRepository.findAll(pageable);
+        List<ProductDto> dtos = page.getContent().stream()
+                .map(p -> new ProductDto(p.getId(), p.getName(), p.getPrice()))
+                .collect(Collectors.toList());
+        return new PageImpl<>(dtos, pageable, page.getTotalElements());
     }
 
     // 3. Read One

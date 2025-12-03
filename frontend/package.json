@@ -4,20 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-  "dev": "vite",
-  "start": "vite",
-  "build": "vite build",
-  "lint": "eslint .",
-  "preview": "vite preview",
-
-  "test": "jest",
-  "test:coverage": "jest --coverage",
-
-  "test:e2eFrontend": "cypress run --spec 'cypress/e2e/login.cy.js'",
-  "test:e2eFrontendProduct": "cypress run --spec 'cypress/e2e/product.cy.js'"
-
-},
-
+    "dev": "vite",
+    "start": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:e2eFrontend": "cypress run --spec 'cypress/e2e/login.cy.js'",
+    "test:e2eFrontendProduct": "cypress run --spec 'cypress/e2e/product.cy.js'"
+  },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.17",
     "axios": "^1.13.2",
