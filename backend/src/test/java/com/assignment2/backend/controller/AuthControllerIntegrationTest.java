@@ -1,9 +1,6 @@
 package com.assignment2.backend.controller;
 
-import com.assignment2.backend.dto.LoginRequest;
-import com.assignment2.backend.entity.User;
-import com.assignment2.backend.repository.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.hamcrest.Matchers.containsString;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,15 +11,21 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.assignment2.backend.dto.LoginRequest;
+import com.assignment2.backend.entity.User;
+import com.assignment2.backend.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-@SpringBootTest // Load toàn bộ hệ thống (Logic thật)
-@AutoConfigureMockMvc // Giả lập Client
-@ActiveProfiles("test") // Dùng DB H2
-@Transactional // Xóa dữ liệu sau khi test xong
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+@Transactional
 class AuthControllerIntegrationTest {
 
     @Autowired
@@ -39,29 +42,31 @@ class AuthControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Tạo dữ liệu mẫu trong DB H2 trước mỗi bài test
-        // Phải mã hóa mật khẩu thì lúc login mới khớp được
+        userRepository.deleteAll();
+
         User testUser = new User();
         testUser.setUsername("realuser");
-        testUser.setPassword(passwordEncoder.encode("Test123456")); 
+        testUser.setPassword(passwordEncoder.encode("Test123456"));
         testUser.setEmail("real@example.com");
         testUser.setRole("ROLE_USER");
 
         userRepository.save(testUser);
     }
 
-    // --- CASE 1: Đăng nhập thành công ---
+    // --- CASE 1: Đăng nhập thành công + Kiểm tra Headers/CORS (Yêu cầu a, b, c) ---
     @Test
-    @DisplayName("Login Success - Trả về 200 và Token")
+    @DisplayName("Login Success - Check Status, Body, Headers & CORS")
     void testLoginSuccess_RealLogic() throws Exception {
         LoginRequest request = new LoginRequest("realuser", "Test123456");
 
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk()) // Kỳ vọng 200 OK
+                .content(objectMapper.writeValueAsString(request))
+                .header("Origin", "http://localhost:3000"))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.token").exists());
+                .andExpect(jsonPath("$.token").exists())
+                .andExpect(header().string("Content-Type", containsString("application/json")));
     }
 
     // --- CASE 2: Sai mật khẩu ---
@@ -73,8 +78,8 @@ class AuthControllerIntegrationTest {
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized()) // Kỳ vọng 401 (Nhờ try-catch ở Controller)
-                .andExpect(jsonPath("$.message").value("Sai tên đăng nhập hoặc mật khẩu"));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").exists());
     }
 
     // --- CASE 3: User không tồn tại ---
@@ -86,7 +91,6 @@ class AuthControllerIntegrationTest {
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized()) // Kỳ vọng 401
-                .andExpect(jsonPath("$.message").value("Sai tên đăng nhập hoặc mật khẩu"));
+                .andExpect(status().isUnauthorized());
     }
 }

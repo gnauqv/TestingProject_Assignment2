@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ProductController.class)
-@AutoConfigureMockMvc(addFilters = false) // <--- QUAN TRỌNG: Tắt Security để test logic Controller
+@AutoConfigureMockMvc(addFilters = false)
 @DisplayName("Product API Integration Tests")
 class ProductControllerIntegrationTest {
 
