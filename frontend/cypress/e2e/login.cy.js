@@ -9,7 +9,7 @@ describe('Chức năng Đăng Nhập (Chế độ Demo)', () => {
       body: { token: 'token-vip-123', user: { name: 'Quang' } }
     }).as('loginSuccess');
 
-    cy.visit('http://localhost:5173/login'); // Nhớ check lại port (3000 hoặc 5173)
+    cy.visit('http://localhost:5173/login'); 
   });
 
   // --- CASE 1: THÀNH CÔNG ---
@@ -20,7 +20,6 @@ describe('Chức năng Đăng Nhập (Chế độ Demo)', () => {
 
     cy.wait('@loginSuccess');
     
-    // SỬA: Bỏ kiểm tra màu chính xác (rgb vs oklch), chỉ kiểm tra nội dung
     cy.get('[data-testid="login-message"]')
       .should('be.visible')
       .and('contain', 'Đăng nhập thành công');
@@ -41,7 +40,6 @@ describe('Chức năng Đăng Nhập (Chế độ Demo)', () => {
 
     cy.wait('@loginFailUser');
 
-    // Nhờ bước 1 đã sửa Login.jsx nên giờ nó sẽ hiện đúng message này
     cy.get('[data-testid="login-message"]')
       .should('contain', 'Tài khoản không tồn tại');
 

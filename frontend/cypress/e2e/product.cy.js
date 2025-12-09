@@ -30,7 +30,7 @@ describe('Chức năng Quản lý Sản phẩm (Chế độ Demo)', () => {
         cy.wait(VIEW_TIME);
     });
 
-    // --- CASE 2: Tạo sản phẩm mới (ĐÃ SỬA LỖI TIMING) ---
+    // --- CASE 2: Tạo sản phẩm mới  ---
     it('2. Tạo sản phẩm mới', () => {
         const newProduct = { name: 'Macbook Air M3', price: 1500 };
 
@@ -46,23 +46,17 @@ describe('Chức năng Quản lý Sản phẩm (Chế độ Demo)', () => {
             body: { id: 99, ...newProduct }
         }).as('createProduct');
 
-        // Định nghĩa Mock API GET mới sẽ được gọi sau khi tạo
-        // Đây là mock chứa sản phẩm mới và ta sẽ đặt alias cho nó
         cy.intercept('GET', '**/api/products', {
             body: [...mockProducts, { id: 99, ...newProduct }]
         }).as('getNewProductList');
-        // Lưu ý: Mock này chỉ có hiệu lực sau khi nó được định nghĩa
         
         // Điền form
         cy.get('[data-testid="name-input"]').type(newProduct.name, { delay: TYPING_SPEED });
         cy.get('[data-testid="price-input"]').type(newProduct.price, { delay: TYPING_SPEED });
         cy.get('[data-testid="submit-button"]').click();
 
-        // Chờ API POST gọi xong
         cy.wait('@createProduct');
 
-        // THAY VÌ CHỜ CỨNG (cy.wait(1000)), TA CHỜ CUỘC GỌI MẠNG ĐÃ ĐƯỢC MOCK
-        // Điều này đảm bảo ứng dụng đã chuyển hướng và tải lại danh sách mới
         cy.wait('@getNewProductList');
         
         cy.contains('Danh sách sản phẩm').should('be.visible');
@@ -81,11 +75,10 @@ describe('Chức năng Quản lý Sản phẩm (Chế độ Demo)', () => {
             body: mockProducts[0]
         }).as('getProductDetail');
 
-        // Vào thẳng trang edit
         cy.visit(`http://localhost:5173/product/edit/${editId}`);
         cy.wait('@getProductDetail');
 
-        // Intercept lệnh PUT
+      
         cy.intercept('PUT', `**/api/products/${editId}`, {
             statusCode: 200,
             body: { ...mockProducts[0], price: newPrice }
@@ -97,8 +90,6 @@ describe('Chức năng Quản lý Sản phẩm (Chế độ Demo)', () => {
 
         cy.wait('@updateProduct');
 
-        // Quay lại list, kiểm tra giá mới (Mock lại list với giá mới)
-        // Lưu ý: Logic này tùy thuộc vào cách App bạn xử lý sau khi update
         cy.url().should('include', '/products');
         
         cy.wait(VIEW_TIME);
@@ -121,12 +112,9 @@ describe('Chức năng Quản lý Sản phẩm (Chế độ Demo)', () => {
             .contains('button', 'Xóa') // Tìm nút Xóa
             .click();
 
-        // Xử lý window.confirm (Cypress tự động accept confirm, nhưng cần event)
         cy.on('window:confirm', () => true);
 
         cy.wait('@deleteProduct');
-
-        // Kiểm tra UI đã xóa (ẩn đi)
         cy.contains('iPhone 15 Pro').should('not.exist');
 
         cy.wait(VIEW_TIME);
